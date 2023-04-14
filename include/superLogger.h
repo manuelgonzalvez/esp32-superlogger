@@ -1,6 +1,14 @@
 #include "Arduino.h"
 
-class Debug
+#define MAX_BUFFER_SIZE 50
+#define THROW_EXCEPTION_ON_OVERFLOW true
+
+#define ANSI_RED        "\033[91m"
+#define ANSI_PURPLE     "\033[35m"
+#define ANSI_YELLOW     "\033[33m"
+#define ANSI_GREEN      "\033[32m"
+#define ANSI_BLUE       "\033[36m"
+class superLogger
 {
 public:
     enum LogLevel
@@ -13,9 +21,7 @@ public:
         VERBOSE
     };
 
-    // Debug(const String &name, HardwareSerial &serial, LogLevel level = NONE, bool pName = true, bool pLvl = true, bool pAnsi = true, bool pLoc = true) : name_(name), serial_(serial), level_(level), printName_(pName), printLevel_(pLvl), printAnsi_(pAnsi), printLocation_(pLoc) {}
-
-    Debug(const String &name, HardwareSerial &serial, LogLevel level = NONE, bool pName = true, bool pLvl = true, bool pAnsi = true, bool pLoc = true) : name_(name), serial_(serial), level_(level), printName_(pName), printLevel_(pLvl), printAnsi_(pAnsi), printLocation_(pLoc) {}
+    superLogger(const String &name, LogLevel level = NONE, HardwareSerial &serial = Serial, bool pName = true, bool pLvl = true, bool pAnsi = true, bool pLoc = true) : name_(name), level_(level), serial_(serial), printName_(pName), printLevel_(pLvl), printAnsi_(pAnsi), printLocation_(pLoc) {}
 
     void setName(const String &name)
     {
@@ -47,15 +53,24 @@ public:
     }
 
     template <typename... Args>
-
     void error(const char *funcName, const char *fileName, int lineNumber, const char *format, Args... args)
     {
         if (level_ >= ERROR)
         {
             String outputString = formatString(format, args...);
-            logError(outputString, funcName, fileName, lineNumber);
+            log(outputString, funcName, fileName, lineNumber, ANSI_RED);
         }
     }
+
+    // template <typename... Args>
+    // void error(const char *funcName, const char *fileName, int lineNumber, const String &format, Args... args)
+    // {
+    //     if (level_ >= ERROR)
+    //     {
+    //         String outputString = formatString(format.c_str(), args...);
+    //         log(outputString, funcName, fileName, lineNumber,ANSI_RED);
+    //     }
+    // }
 
     template <typename... Args>
     void warning(const char *funcName, const char *fileName, int lineNumber, const char *format, Args... args)
@@ -63,7 +78,7 @@ public:
         if (level_ >= WARNING)
         {
             String outputString = formatString(format, args...);
-            logWarning(outputString, funcName, fileName, lineNumber);
+            log(outputString, funcName, fileName, lineNumber, ANSI_YELLOW);
         }
     }
 
@@ -73,7 +88,7 @@ public:
         if (level_ >= INFO)
         {
             String outputString = formatString(format, args...);
-            logInfo(outputString, funcName, fileName, lineNumber);
+            log(outputString, funcName, fileName, lineNumber,ANSI_GREEN);
         }
     }
 
@@ -83,7 +98,7 @@ public:
         if (level_ >= DEBUG)
         {
             String outputString = formatString(format, args...);
-            logDebug(outputString, funcName, fileName, lineNumber);
+            log(outputString, funcName, fileName, lineNumber,ANSI_BLUE);
         }
     }
 
@@ -93,34 +108,73 @@ public:
         if (level_ >= VERBOSE)
         {
             String outputString = formatString(format, args...);
-            logVerbose(outputString, funcName, fileName, lineNumber);
+            log(outputString, funcName, fileName, lineNumber, ANSI_PURPLE);
         }
     }
 
+
+
+
+
+
+    // template <typename... Args>
+    // String formatString(const char *format, Args... args)
+    // {
+    //     char buffer[MAX_BUFFER_SIZE];
+    //     snprintf(buffer, sizeof(buffer), format, args...);
+    //     return String(buffer);
+    // }
+
     template <typename... Args>
-    String formatString(const char *format, Args... args)
+    String formatString(const String &message)
     {
-        char buffer[512];
-        snprintf(buffer, sizeof(buffer), format, args...);
-        return String(buffer);
+        return message;
     }
 
+
+
+
+
+template <typename... Args>
+String formatString(const char *format, Args... args)
+{
+    char buffer[MAX_BUFFER_SIZE];
+    int result = snprintf(buffer, sizeof(buffer), format, args...);
+    if (result < 0) {
+        // throw std::runtime_error("Error in formatString(): snprintf returned a negative value.");
+    }
+    int messageSize = result + 1; // add 1 to account for null terminator
+    if (messageSize > MAX_BUFFER_SIZE) {
+#if THROW_EXCEPTION_ON_OVERFLOW
+        // throw log_e("Error in formatString(): Message size exceeds maximum buffer size.");
+        return "ERR_EXCEEDS_BUFFER";
+#else
+        String message;
+        message.reserve(messageSize);
+        result = snprintf(&message[0], messageSize, format, args...);
+        if (result < 0) {
+            throw std::runtime_error("Error in formatString(): snprintf returned a negative value.");
+        }
+        return message;
+#endif
+    }
+    return String(buffer);
+}
+
+
 private:
-    //   Serial& serial_;
-
     String name_;
-    HardwareSerial &serial_;
-
     LogLevel level_;
+    HardwareSerial &serial_;
     bool printName_;
     bool printLevel_;
     bool printAnsi_;
     bool printLocation_;
 
-    void logError(const String &message, const char *funcName, const char *fileName, int lineNumber)
+    void log(const String &message, const char *funcName, const char *fileName, int lineNumber, const char *color)
     {
         serial_.printf("%s%s%s%s%s%s%s%s%s%s%s%s%s%s\n",
-                       (printAnsi_ ? "\033[91m" : ""),                     // ANSI color for red
+                       (printAnsi_ ? color : ""),                          // ANSI color
                        (printName_ ? "[" : ""),                            // File location (if enabled)
                        (printName_ ? name_.c_str() : ""),                  // name (if enabled)
                        (printName_ ? "]" : ""),                            // File location (if enabled)
@@ -135,96 +189,110 @@ private:
                        message.c_str(),                                    // Log message
                        (printAnsi_ ? "\033[0m" : "")                       // Reset ANSI color
         );
-        // Serial.printf("\033[31m[%s][E][%s:%d]%s(): %s\033[0m\n", name_.c_str(), fileName, lineNumber, funcName, message.c_str());
-        // char location[128];
-        // sprintf(location,"[%s:%d]%s(): ",fileName, lineNumber, funcName);
-        // Serial.printf("%s[%s]%s%s%s%s\n", (printAnsi_ ? "\033[91m" : ""), name_.c_str(),(printLevel_ ? "[E]" : ""),(printLocation_?location:""), message.c_str(), (printAnsi_ ? "\033[0m" : ""));
-        // Serial.printf("%s[%s]%s [%s:%d]%s(): %s%s\n", (printAnsi_ ? "\033[91m" : ""), name_.c_str(),(printLevel_ ? "[E]" : ""), fileName, lineNumber, funcName, message.c_str(), (printAnsi_ ? "\033[0m" : ""));
     }
+    // void logError(const String &message, const char *funcName, const char *fileName, int lineNumber)
+    // {
+    //     serial_.printf("%s%s%s%s%s%s%s%s%s%s%s%s%s%s\n",
+    //                    (printAnsi_ ? "\033[91m" : ""),                     // ANSI color for red
+    //                    (printName_ ? "[" : ""),                            // File location (if enabled)
+    //                    (printName_ ? name_.c_str() : ""),                  // name (if enabled)
+    //                    (printName_ ? "]" : ""),                            // File location (if enabled)
+    //                    (printLevel_ ? "[E]" : ""),                         // Log level (if enabled)
+    //                    (printLocation_ ? "[" : ""),                        // File location (if enabled)
+    //                    (printLocation_ ? fileName : ""),                   // File name (if enabled)
+    //                    (printLocation_ ? ":" : ""),                        // File location (if enabled)
+    //                    (printLocation_ ? String(lineNumber).c_str() : ""), // Line number (if enabled)
+    //                    (printLocation_ ? "] " : ""),                       // File location (if enabled)
+    //                    (printLocation_ ? funcName : ""),                   // Function name (if enabled)
+    //                    (printLocation_ ? "(): " : ""),                     // File location (if enabled)
+    //                    message.c_str(),                                    // Log message
+    //                    (printAnsi_ ? "\033[0m" : "")                       // Reset ANSI color
+    //     );
+    // }
 
-    void logWarning(const String &message, const char *funcName, const char *fileName, int lineNumber)
-    {
-        serial_.printf("%s%s%s%s%s%s%s%s%s%s%s%s%s%s\n",
-                       (printAnsi_ ? "\033[33m" : ""),                     // ANSI color for red
-                       (printName_ ? "[" : ""),                            // File location (if enabled)
-                       (printName_ ? name_.c_str() : ""),                  // name (if enabled)
-                       (printName_ ? "]" : ""),                            // File location (if enabled)
-                       (printLevel_ ? "[E]" : ""),                         // Log level (if enabled)
-                       (printLocation_ ? "[" : ""),                        // File location (if enabled)
-                       (printLocation_ ? fileName : ""),                   // File name (if enabled)
-                       (printLocation_ ? ":" : ""),                        // File location (if enabled)
-                       (printLocation_ ? String(lineNumber).c_str() : ""), // Line number (if enabled)
-                       (printLocation_ ? "] " : ""),                       // File location (if enabled)
-                       (printLocation_ ? funcName : ""),                   // Function name (if enabled)
-                       (printLocation_ ? "(): " : ""),                     // File location (if enabled)
-                       message.c_str(),                                    // Log message
-                       (printAnsi_ ? "\033[0m" : "")                       // Reset ANSI color
-        );
-        // Serial.printf("%s[%s][W][%s:%d]%s(): %s%s\n", (printAnsi_ ? "\033[33m" : ""), name_.c_str(), fileName, lineNumber, funcName, message.c_str(), (printAnsi_ ? "\033[0m" : ""));
-    }
+    // void logWarning(const String &message, const char *funcName, const char *fileName, int lineNumber)
+    // {
+    //     serial_.printf("%s%s%s%s%s%s%s%s%s%s%s%s%s%s\n",
+    //                    (printAnsi_ ? "\033[33m" : ""),                     // ANSI color for red
+    //                    (printName_ ? "[" : ""),                            // File location (if enabled)
+    //                    (printName_ ? name_.c_str() : ""),                  // name (if enabled)
+    //                    (printName_ ? "]" : ""),                            // File location (if enabled)
+    //                    (printLevel_ ? "[E]" : ""),                         // Log level (if enabled)
+    //                    (printLocation_ ? "[" : ""),                        // File location (if enabled)
+    //                    (printLocation_ ? fileName : ""),                   // File name (if enabled)
+    //                    (printLocation_ ? ":" : ""),                        // File location (if enabled)
+    //                    (printLocation_ ? String(lineNumber).c_str() : ""), // Line number (if enabled)
+    //                    (printLocation_ ? "] " : ""),                       // File location (if enabled)
+    //                    (printLocation_ ? funcName : ""),                   // Function name (if enabled)
+    //                    (printLocation_ ? "(): " : ""),                     // File location (if enabled)
+    //                    message.c_str(),                                    // Log message
+    //                    (printAnsi_ ? "\033[0m" : "")                       // Reset ANSI color
+    //     );
+    //     // Serial.printf("%s[%s][W][%s:%d]%s(): %s%s\n", (printAnsi_ ? "\033[33m" : ""), name_.c_str(), fileName, lineNumber, funcName, message.c_str(), (printAnsi_ ? "\033[0m" : ""));
+    // }
 
-    void logInfo(const String &message, const char *funcName, const char *fileName, int lineNumber)
-    {
-        serial_.printf("%s%s%s%s%s%s%s%s%s%s%s%s%s%s\n",
-                       (printAnsi_ ? "\033[32m" : ""),                     // ANSI color for red
-                       (printName_ ? "[" : ""),                            // File location (if enabled)
-                       (printName_ ? name_.c_str() : ""),                  // name (if enabled)
-                       (printName_ ? "]" : ""),                            // File location (if enabled)
-                       (printLevel_ ? "[E]" : ""),                         // Log level (if enabled)
-                       (printLocation_ ? "[" : ""),                        // File location (if enabled)
-                       (printLocation_ ? fileName : ""),                   // File name (if enabled)
-                       (printLocation_ ? ":" : ""),                        // File location (if enabled)
-                       (printLocation_ ? String(lineNumber).c_str() : ""), // Line number (if enabled)
-                       (printLocation_ ? "] " : ""),                       // File location (if enabled)
-                       (printLocation_ ? funcName : ""),                   // Function name (if enabled)
-                       (printLocation_ ? "(): " : ""),                     // File location (if enabled)
-                       message.c_str(),                                    // Log message
-                       (printAnsi_ ? "\033[0m" : "")                       // Reset ANSI color
-        );
-        // Serial.printf("%s[%s][I][%s:%d]%s(): %s%s\n", (printAnsi_ ? "\033[32m" : ""), name_.c_str(), fileName, lineNumber, funcName, message.c_str(), (printAnsi_ ? "\033[0m" : ""));
-    }
+    // void logInfo(const String &message, const char *funcName, const char *fileName, int lineNumber)
+    // {
+    //     serial_.printf("%s%s%s%s%s%s%s%s%s%s%s%s%s%s\n",
+    //                    (printAnsi_ ? "\033[32m" : ""),                     // ANSI color for red
+    //                    (printName_ ? "[" : ""),                            // File location (if enabled)
+    //                    (printName_ ? name_.c_str() : ""),                  // name (if enabled)
+    //                    (printName_ ? "]" : ""),                            // File location (if enabled)
+    //                    (printLevel_ ? "[E]" : ""),                         // Log level (if enabled)
+    //                    (printLocation_ ? "[" : ""),                        // File location (if enabled)
+    //                    (printLocation_ ? fileName : ""),                   // File name (if enabled)
+    //                    (printLocation_ ? ":" : ""),                        // File location (if enabled)
+    //                    (printLocation_ ? String(lineNumber).c_str() : ""), // Line number (if enabled)
+    //                    (printLocation_ ? "] " : ""),                       // File location (if enabled)
+    //                    (printLocation_ ? funcName : ""),                   // Function name (if enabled)
+    //                    (printLocation_ ? "(): " : ""),                     // File location (if enabled)
+    //                    message.c_str(),                                    // Log message
+    //                    (printAnsi_ ? "\033[0m" : "")                       // Reset ANSI color
+    //     );
+    //     // Serial.printf("%s[%s][I][%s:%d]%s(): %s%s\n", (printAnsi_ ? "\033[32m" : ""), name_.c_str(), fileName, lineNumber, funcName, message.c_str(), (printAnsi_ ? "\033[0m" : ""));
+    // }
 
-    void logDebug(const String &message, const char *funcName, const char *fileName, int lineNumber)
-    {
-        serial_.printf("%s%s%s%s%s%s%s%s%s%s%s%s%s%s\n",
-                       (printAnsi_ ? "\033[36m" : ""),                     // ANSI color for red
-                       (printName_ ? "[" : ""),                            // File location (if enabled)
-                       (printName_ ? name_.c_str() : ""),                  // name (if enabled)
-                       (printName_ ? "]" : ""),                            // File location (if enabled)
-                       (printLevel_ ? "[E]" : ""),                         // Log level (if enabled)
-                       (printLocation_ ? "[" : ""),                        // File location (if enabled)
-                       (printLocation_ ? fileName : ""),                   // File name (if enabled)
-                       (printLocation_ ? ":" : ""),                        // File location (if enabled)
-                       (printLocation_ ? String(lineNumber).c_str() : ""), // Line number (if enabled)
-                       (printLocation_ ? "] " : ""),                       // File location (if enabled)
-                       (printLocation_ ? funcName : ""),                   // Function name (if enabled)
-                       (printLocation_ ? "(): " : ""),                     // File location (if enabled)
-                       message.c_str(),                                    // Log message
-                       (printAnsi_ ? "\033[0m" : "")                       // Reset ANSI color
-        );
-        // Serial.printf("%s[%s][D][%s:%d]%s(): %s%s\n", (printAnsi_ ? "\033[36m" : ""), name_.c_str(), fileName, lineNumber, funcName, message.c_str(), (printAnsi_ ? "\033[0m" : ""));
-    }
+    // void logDebug(const String &message, const char *funcName, const char *fileName, int lineNumber)
+    // {
+    //     serial_.printf("%s%s%s%s%s%s%s%s%s%s%s%s%s%s\n",
+    //                    (printAnsi_ ? "\033[36m" : ""),                     // ANSI color for red
+    //                    (printName_ ? "[" : ""),                            // File location (if enabled)
+    //                    (printName_ ? name_.c_str() : ""),                  // name (if enabled)
+    //                    (printName_ ? "]" : ""),                            // File location (if enabled)
+    //                    (printLevel_ ? "[E]" : ""),                         // Log level (if enabled)
+    //                    (printLocation_ ? "[" : ""),                        // File location (if enabled)
+    //                    (printLocation_ ? fileName : ""),                   // File name (if enabled)
+    //                    (printLocation_ ? ":" : ""),                        // File location (if enabled)
+    //                    (printLocation_ ? String(lineNumber).c_str() : ""), // Line number (if enabled)
+    //                    (printLocation_ ? "] " : ""),                       // File location (if enabled)
+    //                    (printLocation_ ? funcName : ""),                   // Function name (if enabled)
+    //                    (printLocation_ ? "(): " : ""),                     // File location (if enabled)
+    //                    message.c_str(),                                    // Log message
+    //                    (printAnsi_ ? "\033[0m" : "")                       // Reset ANSI color
+    //     );
+    //     // Serial.printf("%s[%s][D][%s:%d]%s(): %s%s\n", (printAnsi_ ? "\033[36m" : ""), name_.c_str(), fileName, lineNumber, funcName, message.c_str(), (printAnsi_ ? "\033[0m" : ""));
+    // }
 
-    void logVerbose(const String &message, const char *funcName, const char *fileName, int lineNumber)
-    {
-        serial_.printf("%s%s%s%s%s%s%s%s%s%s%s%s%s%s\n",
-                       (printAnsi_ ? "\033[35m" : ""),                     // ANSI color for red
-                       (printName_ ? "[" : ""),                            // File location (if enabled)
-                       (printName_ ? name_.c_str() : ""),                  // name (if enabled)
-                       (printName_ ? "]" : ""),                            // File location (if enabled)
-                       (printLevel_ ? "[E]" : ""),                         // Log level (if enabled)
-                       (printLocation_ ? "[" : ""),                        // File location (if enabled)
-                       (printLocation_ ? fileName : ""),                   // File name (if enabled)
-                       (printLocation_ ? ":" : ""),                        // File location (if enabled)
-                       (printLocation_ ? String(lineNumber).c_str() : ""), // Line number (if enabled)
-                       (printLocation_ ? "] " : ""),                       // File location (if enabled)
-                       (printLocation_ ? funcName : ""),                   // Function name (if enabled)
-                       (printLocation_ ? "(): " : ""),                     // File location (if enabled)
-                       message.c_str(),                                    // Log message
-                       (printAnsi_ ? "\033[0m" : "")                       // Reset ANSI color
-        );
-        // Serial.printf("%s[%s][V][%s:%d]%s(): %s%s\n", (printAnsi_ ? "\033[35m" : ""), name_.c_str(), fileName, lineNumber, funcName, message.c_str(), (printAnsi_ ? "\033[0m" : ""));
-    }
+    // void logVerbose(const String &message, const char *funcName, const char *fileName, int lineNumber)
+    // {
+    //     serial_.printf("%s%s%s%s%s%s%s%s%s%s%s%s%s%s\n",
+    //                    (printAnsi_ ? "\033[35m" : ""),                     // ANSI color for red
+    //                    (printName_ ? "[" : ""),                            // File location (if enabled)
+    //                    (printName_ ? name_.c_str() : ""),                  // name (if enabled)
+    //                    (printName_ ? "]" : ""),                            // File location (if enabled)
+    //                    (printLevel_ ? "[E]" : ""),                         // Log level (if enabled)
+    //                    (printLocation_ ? "[" : ""),                        // File location (if enabled)
+    //                    (printLocation_ ? fileName : ""),                   // File name (if enabled)
+    //                    (printLocation_ ? ":" : ""),                        // File location (if enabled)
+    //                    (printLocation_ ? String(lineNumber).c_str() : ""), // Line number (if enabled)
+    //                    (printLocation_ ? "] " : ""),                       // File location (if enabled)
+    //                    (printLocation_ ? funcName : ""),                   // Function name (if enabled)
+    //                    (printLocation_ ? "(): " : ""),                     // File location (if enabled)
+    //                    message.c_str(),                                    // Log message
+    //                    (printAnsi_ ? "\033[0m" : "")                       // Reset ANSI color
+    //     );
+    //     // Serial.printf("%s[%s][V][%s:%d]%s(): %s%s\n", (printAnsi_ ? "\033[35m" : ""), name_.c_str(), fileName, lineNumber, funcName, message.c_str(), (printAnsi_ ? "\033[0m" : ""));
+    // }
 };
 
 #define log_error(debugObj, fmt, ...)                                                          \
