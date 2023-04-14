@@ -1,0 +1,496 @@
+// class Debug {
+// public:
+//   enum LogLevel { NONE, ERROR,WARNING, INFO, DEBUG, VERBOSE};
+
+//   Debug(const String& name, LogLevel level = NONE) : name_(name), level_(level) {}
+
+//   void setName(const String& name) {
+//     name_ = name;
+//   }
+
+//   void setLevel(LogLevel level) {
+//     level_ = level;
+//   }
+
+//   template<typename T, typename... Args>
+//   void debugPrint(const char* format, T value, Args... args) {
+//     if (level_ >= DEBUG) {
+//       String outputString = formatString(format, value, args...);
+//       logDebug(outputString);
+//     }
+//   }
+
+//   template<typename... Args>
+//   void warning(const char* format, Args... args) {
+//     if (level_ >= WARNING) {
+//       String outputString = formatString(format, args...);
+//       logWarning(outputString);
+//     }
+//   }
+
+//   template<typename... Args>
+//   void info(const char* format, Args... args) {
+//     if (level_ >= INFO) {
+//       String outputString = formatString(format, args...);
+//       logInfo(outputString);
+//     }
+//   }
+
+//   template<typename... Args>
+//   void verbose(const char* format, Args... args) {
+//     if (level_ >= VERBOSE) {
+//       String outputString = formatString(format, args...);
+//       logVerbose(outputString);
+//     }
+//   }
+
+//   template<typename... Args>
+//   void error(const char* format, Args... args) {
+//     if (level_ >= ERROR) {
+//       String outputString = formatString(format, args...);
+//       logError(outputString);
+//     }
+//   }
+
+// private:
+//   String name_;
+//   LogLevel level_;
+
+// //   String formatString(const char* format) {
+// //     return format;
+// //   }
+
+//   template<typename T, typename... Args>
+//   String formatString(const char* format, Args... args) {
+//     char buffer[256];
+//     snprintf(buffer, sizeof(buffer), format, args...);
+//     return String(buffer);
+//   }
+// //   template<typename T, typename... Args>
+// //   String formatString(const char* format, T value, Args... args) {
+// //     String outputString = "";
+// //     while (*format) {
+// //       if (*format == '%') {
+// //         if (*(format+1) == 'd') {
+// //           outputString += String(value);
+// //           format += 2;
+// //           break;
+// //         } else if (*(format+1) == 'f') {
+// //           outputString += String(value, 4);
+// //           format += 2;
+// //           break;
+// //         } else if (*(format+1) == 's') {
+// //           outputString += value;
+// //           format += 2;
+// //           break;
+// //         }
+// //       } else {
+// //         outputString += *format++;
+// //       }
+// //     }
+// //     return outputString + formatString(format, args...);
+// //   }
+
+// void logDebug(const String& message) {
+//   log("DEBUG", "\033[32m" + message + "\033[0m"); // Green color for DEBUG messages
+// }
+
+// void logInfo(const String& message) {
+//   log("INFO", "\033[36m" + message + "\033[0m"); // Cyan color for INFO messages
+// }
+
+// void logWarning(const String& message) {
+//   log("WARNING", "\033[33m" + message + "\033[0m"); // Yellow color for WARNING messages
+// }
+
+// void logVerbose(const String& message) {
+//   log("VERBOSE", "\033[37m" + message + "\033[0m"); // White color for VERBOSE messages
+// }
+
+// void logError(const String& message) {
+//   log("ERROR", "\033[31m" + message + "\033[0m"); // Red color for ERROR messages
+// }
+
+//   void log(const String& level, const String& message) {
+//     Serial.printf("[%s][%s]: %s\n", name_.c_str(), level.c_str(), message.c_str());
+//   }
+// };
+
+////////////////////ITERACION NUMERO DOS
+
+#include "Arduino.h"
+
+// class Debug {
+// public:
+//   enum LogLevel { NONE, ERROR,WARNING, INFO, DEBUG, VERBOSE};
+
+//   Debug(const String& name, LogLevel level = NONE) : name_(name), level_(level) {}
+
+//   void setName(const String& name) {
+//     name_ = name;
+//   }
+
+//   void setLevel(LogLevel level) {
+//     level_ = level;
+//   }
+
+//   template<typename... Args>
+//   void debugPrint(const char* format, Args... args) {
+//     if (level_ >= DEBUG) {
+//       String outputString = formatString(format, args...);
+//       logDebug(outputString);
+//     }
+//   }
+
+//   template<typename... Args>
+//   void warning(const char* format, Args... args) {
+//     if (level_ >= WARNING) {
+//       String outputString = formatString(format, args...);
+//       logWarning(outputString);
+//     }
+//   }
+
+//   template<typename... Args>
+//   void info(const char* format, Args... args) {
+//     if (level_ >= INFO) {
+//       String outputString = formatString(format, args...);
+//       logInfo(outputString);
+//     }
+//   }
+
+//   template<typename... Args>
+//   void verbose(const char* format, Args... args) {
+//     if (level_ >= VERBOSE) {
+//       String outputString = formatString(format, args...);
+//       logVerbose(outputString);
+//     }
+//   }
+
+//   template<typename... Args>
+//   void error(const char* format, Args... args) {
+//     if (level_ >= ERROR) {
+//       String outputString = formatString(format, args...);
+//       logError(outputString, __builtin_FUNCTION(), __builtin_FILE(), __builtin_LINE());
+//     }
+//   }
+
+// //   template<typename... Args>
+// //   void error(const char* format, Args... args) {
+// //     if (level_ >= ERROR) {
+// //       String outputString = formatString(format, args...);
+// //       logError(outputString);
+// //     }
+// //   }
+
+// private:
+//   String name_;
+//   LogLevel level_;
+
+//   template<typename... Args>
+//   String formatString(const char* format, Args... args) {
+//     char buffer[256];
+//     snprintf(buffer, sizeof(buffer), format, args...);
+//     return String(buffer);
+//   }
+
+//   void logDebug(const String& message) {
+//     log("DEBUG", "\033[32m" + message + "\033[0m"); // Green color for DEBUG messages
+//   }
+
+//   void logInfo(const String& message) {
+//     log("INFO", "\033[36m" + message + "\033[0m"); // Cyan color for INFO messages
+//   }
+
+//   void logWarning(const String& message) {
+//     log("WARNING", "\033[33m" + message + "\033[0m"); // Yellow color for WARNING messages
+//   }
+
+//   void logVerbose(const String& message) {
+//     log("VERBOSE", "\033[37m" + message + "\033[0m"); // White color for VERBOSE messages
+//   }
+
+// //   void logError(const String& message) {
+// //     log("ERROR", "\033[31m" + message + "\033[0m"); // Red color for ERROR messages
+// //   }
+//   void logError(const String& message, const char* function, const char* file, const int line) {
+//     log("ERROR", "\033[31m" + message + " - Function: " + function + " - File: " + file + " - Line: " + String(line) + "\033[0m"); // Red color for ERROR messages
+//   }
+
+//   void log(const String& level, const String& message) {
+//     Serial.printf("[%s][%s]: %s\n", name_.c_str(), level.c_str(), message.c_str());
+//   }
+// };
+
+//////// ITERACION NUMERO TRES
+
+// // #define logError(message) logErrorWithContext(__builtin_FUNCTION(), __builtin_FILE(), __builtin_LINE(), message)
+
+// class Debug
+// {
+// public:
+//     enum LogLevel
+//     {
+//         NONE,
+//         ERROR,
+//         WARNING,
+//         INFO,
+//         DEBUG,
+//         VERBOSE
+//     };
+
+//     Debug(const String &name, LogLevel level = NONE) : name_(name), level_(level) {}
+
+//     void setName(const String &name)
+//     {
+//         name_ = name;
+//     }
+
+//     void setLevel(LogLevel level)
+//     {
+//         level_ = level;
+//     }
+
+//     //   template<typename... Args>
+//     //   void debugPrint(const char* format, Args... args) {
+//     //     if (level_ >= DEBUG) {
+//     //       String outputString = formatString(format, args...);
+//     //       logDebug(outputString);
+//     //     }
+//     //   }
+
+//     //   template<typename... Args>
+//     //   void warning(const char* format, Args... args) {
+//     //     if (level_ >= WARNING) {
+//     //       String outputString = formatString(format, args...);
+//     //       logWarning(outputString);
+//     //     }
+//     //   }
+
+//     //   template<typename... Args>
+//     //   void info(const char* format, Args... args) {
+//     //     if (level_ >= INFO) {
+//     //       String outputString = formatString(format, args...);
+//     //       logInfo(outputString);
+//     //     }
+//     //   }
+
+//     //   template<typename... Args>
+//     //   void verbose(const char* format, Args... args) {
+//     //     if (level_ >= VERBOSE) {
+//     //       String outputString = formatString(format, args...);
+//     //       logVerbose(outputString);
+//     //     }
+//     //   }
+
+//     //   template<typename... Args>
+//     //   void error(const char* format, Args... args, const char* funcName = __FUNCTION__, const char* fileName = __FILE__, int lineNumber = __LINE__) {
+//     //     if (level_ >= ERROR) {
+//     //       String outputString = formatString(format, args...);
+//     //       logError(outputString, funcName, fileName, lineNumber);
+//     //     }
+//     //   }
+
+// // template<typename... Args>
+// // void error(const String& message, const char* funcName = __builtin_FUNCTION(), const char* fileName = __builtin_FILE(), int lineNumber = __builtin_LINE()) {
+// //   if (level_ >= ERROR) {
+// //     logError(message.c_str(), funcName, fileName, lineNumber);
+// //   }
+// // }
+
+// template<typename... Args>
+// void error(const String& message, const char* funcName = __builtin_FUNCTION(), const char* fileName = __builtin_FILE(), int lineNumber = __LINE__) {
+//   if (level_ >= ERROR) {
+//     logError(message.c_str(), funcName, fileName, lineNumber);
+//   }
+// }
+
+// template<typename... Args>
+// void error(const char* format, Args... args, const char* funcName = __builtin_FUNCTION(), const char* fileName = __builtin_FILE(), int lineNumber = __LINE__) {
+//   if (level_ >= ERROR) {
+//     String outputString = formatString(format, args...);
+//     logError(outputString.c_str(), funcName, fileName, lineNumber);
+//   }
+// }
+
+//     // template <typename... Args>
+//     // void error(const char *format, Args... args, const char *funcName, const char *fileName, int lineNumber)
+//     // {
+//     //     if (level_ >= ERROR)
+//     //     {
+//     //         String outputString = formatString(format, args...);
+//     //         logError(outputString, funcName, fileName, lineNumber);
+//     //     }
+//     // }
+
+//     LogLevel getLogLevel() const { return level_; } // add a public member function to get the log level
+
+//     // template <typename... Args>
+//     // String formatString(const char *format, Args... args)
+//     // {
+//     //     char buffer[256];
+//     //     snprintf(buffer, sizeof(buffer), format, args...);
+//     //     return String(buffer);
+//     // }
+
+
+
+// template<typename T>
+// String formatString(const char* format, const T& arg) {
+//   char buffer[256];
+//   snprintf(buffer, sizeof(buffer), format, arg);
+//   return String(buffer);
+// }
+
+// template<typename T, typename... Args>
+// String formatString(const char* format, const T& arg, const Args&... args) {
+//   return formatString(formatString(format, arg).c_str(), args...);
+// }
+//     //   void logError(const String& message, const char* funcName, const char* fileName, int lineNumber) {
+//     //     log("ERROR", "\033[31m" + message + "\033[0m"); // Red color for ERROR messages
+//     //     Serial.printf("[%s][ERROR] in function %s(), file %s:%d\n", name_.c_str(), funcName, fileName, lineNumber);
+//     //   }
+
+// private:
+//     String name_;
+//     LogLevel level_;
+
+//     //   void logDebug(const String& message) {
+//     //     log("DEBUG", "\033[32m" + message + "\033[0m"); // Green color for DEBUG messages
+//     //   }
+
+//     //   void logInfo(const String& message) {
+//     //     log("INFO", "\033[36m" + message + "\033[0m"); // Cyan color for INFO messages
+//     //   }
+
+//     //   void logWarning(const String& message) {
+//     //     log("WARNING", "\033[33m" + message + "\033[0m"); // Yellow color for WARNING messages
+//     //   }
+
+//     //   void logVerbose(const String& message) {
+//     //     log("VERBOSE", "\033[37m" + message + "\033[0m"); // White color for VERBOSE messages
+//     //   }
+
+//     void logError(const String &message, const char *funcName, const char *fileName, int lineNumber)
+//     {
+//         log("ERROR", "\033[31m" + message + "\033[0m"); // Red color for ERROR messages
+//         Serial.printf("[%s][ERROR] in function %s(), file %s:%d\n", name_.c_str(), funcName, fileName, lineNumber);
+//     }
+
+//     void log(const String &level, const String &message)
+//     {
+//         Serial.printf("[%s][%s]: %s\n", name_.c_str(), level.c_str(), message.c_str());
+//     }
+// };
+
+// // class MyDebug : public Debug {
+// // public:
+// //   MyDebug(const String& name, LogLevel level = NONE) : Debug(name, level) {}
+
+// //   template<typename... Args>
+// //   void error(const char* format, Args... args) {
+// //     if (this->getLogLevel() >= ERROR) {
+// //       String outputString = this->formatString(format, args...);
+// //       logError(outputString, __FUNCTION__, __FILE__, __LINE__);
+// //     }
+// //   }
+// // };
+
+// // #define MY_DEBUG_ERROR(format, ...) myDebug.error(format, __FUNCTION__, __FILE__, __LINE__, ##__VA_ARGS__)
+
+// // #define MYLOG_ERROR(debugObj, fmt, ...) do { \
+// //   String outputString = debugObj.formatString(fmt, ##__VA_ARGS__); \
+// //   debugObj.error(outputString.c_str(), ##__VA_ARGS__, __builtin_FUNCTION(), __FILE__, __builtin_LINE()); \
+// // } while (0)
+
+// #define MYLOG_ERROR(debugObj, fmt, ...) do { \
+//   String outputString = debugObj.formatString(fmt, ##__VA_ARGS__); \
+//   debugObj.error(outputString.c_str(), ##__VA_ARGS__, __FUNCTION__, __FILE__, __LINE__); \
+// } while (0)
+
+// // #define MYLOG_ERROR(fmt, ...) myDebug.error(fmt, ##__VA_ARGS__, __FUNCTION__, __FILE__, __LINE__)
+
+
+/////////////////impl 4
+
+
+#include "Arduino.h"
+
+class Debug
+{
+public:
+    enum LogLevel
+    {
+        NONE,
+        ERROR,
+        WARNING,
+        INFO,
+        DEBUG,
+        VERBOSE
+    };
+
+    Debug(const String &name, LogLevel level = NONE) : name_(name), level_(level) {}
+
+    void setName(const String &name)
+    {
+        name_ = name;
+    }
+
+    void setLevel(LogLevel level)
+    {
+        level_ = level;
+    }
+
+template<typename... Args>
+void error(const char* format, Args... args, const char* funcName , const char* fileName , int lineNumber) {
+  if (level_ >= ERROR) {
+    String outputString = formatString(format, args...);
+    logError(outputString, funcName, fileName, lineNumber);
+  }
+}
+
+
+
+
+// template<typename... Args>
+// void error(const char* format, Args... args, const char* funcName = __builtin_FUNCTION(), const char* fileName = __builtin_FILE(), int lineNumber = __LINE__) {
+//   if (level_ >= ERROR) {
+//     String outputString = formatString(format, args...);
+//     logError(outputString.c_str(), funcName, fileName, lineNumber);
+//   }
+// }
+
+template<typename... Args>
+String formatString(const char* format, Args... args) {
+  char buffer[256];
+  snprintf(buffer, sizeof(buffer), format, args...);
+  return String(buffer);
+}
+
+// template<typename T>
+// String formatString(const char* format, const T& arg) {
+//   char buffer[256];
+//   snprintf(buffer, sizeof(buffer), format, arg);
+//   return String(buffer);
+// }
+
+// template<typename T, typename... Args>
+// String formatString(const char* format, const T& arg, const Args&... args) {
+//   return formatString(formatString(format, arg).c_str(), args...);
+// }
+
+private:
+    String name_;
+    LogLevel level_;
+
+
+    void logError(const String &message, const char *funcName, const char *fileName, int lineNumber)
+    {
+        log("ERROR", "\033[31m" + message + "\033[0m"); // Red color for ERROR messages
+        Serial.printf("[%s][ERROR] in function %s(), file %s:%d\n", name_.c_str(), funcName, fileName, lineNumber);
+    }
+
+    void log(const String &level, const String &message)
+    {
+        Serial.printf("[%s][%s]: %s\n", name_.c_str(), level.c_str(), message.c_str());
+    }
+};
