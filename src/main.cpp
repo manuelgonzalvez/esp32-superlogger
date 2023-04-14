@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include "superLogger.h"
 
-Debug myDebug("main", Debug::INFO);
+Debug myDebug("main",Serial, Debug::INFO);
 
 void setup()
 {
