@@ -8,6 +8,12 @@
 #define ANSI_YELLOW     "\033[33m"
 #define ANSI_GREEN      "\033[32m"
 #define ANSI_BLUE       "\033[36m"
+
+#define LEVEL_V         "[V]"
+#define LEVEL_D         "[D]"
+#define LEVEL_I         "[I]"
+#define LEVEL_W         "[W]"
+#define LEVEL_E         "[E]"
 class superLogger
 {
 public:
@@ -58,7 +64,7 @@ public:
         if (level_ >= ERROR)
         {
             String outputString = formatString(format, args...);
-            log(outputString, funcName, fileName, lineNumber, ANSI_RED);
+            log(outputString, funcName, fileName, lineNumber, ANSI_RED, LEVEL_E);
         }
     }
 
@@ -68,7 +74,7 @@ public:
         if (level_ >= WARNING)
         {
             String outputString = formatString(format, args...);
-            log(outputString, funcName, fileName, lineNumber, ANSI_YELLOW);
+            log(outputString, funcName, fileName, lineNumber, ANSI_YELLOW, LEVEL_W);
         }
     }
 
@@ -78,7 +84,7 @@ public:
         if (level_ >= INFO)
         {
             String outputString = formatString(format, args...);
-            log(outputString, funcName, fileName, lineNumber,ANSI_GREEN);
+            log(outputString, funcName, fileName, lineNumber,ANSI_GREEN, LEVEL_I);
         }
     }
 
@@ -88,7 +94,7 @@ public:
         if (level_ >= DEBUG)
         {
             String outputString = formatString(format, args...);
-            log(outputString, funcName, fileName, lineNumber,ANSI_BLUE);
+            log(outputString, funcName, fileName, lineNumber,ANSI_BLUE, LEVEL_D);
         }
     }
 
@@ -98,7 +104,7 @@ public:
         if (level_ >= VERBOSE)
         {
             String outputString = formatString(format, args...);
-            log(outputString, funcName, fileName, lineNumber, ANSI_PURPLE);
+            log(outputString, funcName, fileName, lineNumber, ANSI_PURPLE, LEVEL_V);
         }
     }
 
@@ -142,14 +148,14 @@ private:
     bool printAnsi_;
     bool printLocation_;
 
-    void log(const String &message, const char *funcName, const char *fileName, int lineNumber, const char *color)
+    void log(const String &message, const char *funcName, const char *fileName, int lineNumber, const char *color, const char *levelLetter)
     {
         serial_.printf("%s%s%s%s%s%s%s%s%s%s%s%s%s%s\n",
                        (printAnsi_ ? color : ""),                          // ANSI color
                        (printName_ ? "[" : ""),                            // File location (if enabled)
                        (printName_ ? name_.c_str() : ""),                  // name (if enabled)
                        (printName_ ? "]" : ""),                            // File location (if enabled)
-                       (printLevel_ ? "[E]" : ""),                         // Log level (if enabled)
+                       (printLevel_ ? levelLetter : ""),                         // Log level (if enabled)
                        (printLocation_ ? "[" : ""),                        // File location (if enabled)
                        (printLocation_ ? fileName : ""),                   // File name (if enabled)
                        (printLocation_ ? ":" : ""),                        // File location (if enabled)
