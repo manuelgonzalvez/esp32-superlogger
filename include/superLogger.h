@@ -1,19 +1,27 @@
 #include "Arduino.h"
 
-#define MAX_BUFFER_SIZE 50
+#define MAX_BUFFER_SIZE 512
 #define THROW_EXCEPTION_ON_OVERFLOW true
 
-#define ANSI_RED        "\033[91m"
-#define ANSI_PURPLE     "\033[35m"
-#define ANSI_YELLOW     "\033[33m"
-#define ANSI_GREEN      "\033[32m"
-#define ANSI_BLUE       "\033[36m"
+#define ANSI_RED "\033[91m"
+#define ANSI_PURPLE "\033[35m"
+#define ANSI_YELLOW "\033[33m"
+#define ANSI_GREEN "\033[32m"
+#define ANSI_BLUE "\033[36m"
 
-#define LEVEL_V         "[V]"
-#define LEVEL_D         "[D]"
-#define LEVEL_I         "[I]"
-#define LEVEL_W         "[W]"
-#define LEVEL_E         "[E]"
+#define ANSI_BG_RED "\033[41;37m"
+#define ANSI_BG_PURPLE "\033[45;37m"
+#define ANSI_BG_YELLOW "\033[43;30m"
+#define ANSI_BG_GREEN "\033[42;30m"
+#define ANSI_BG_BLUE "\033[46;37m"
+
+#define LEVEL_V "[V]"
+#define LEVEL_D "[D]"
+#define LEVEL_I "[I]"
+#define LEVEL_W "[W]"
+#define LEVEL_E "[E]"
+
+#define EXCEEDS_MSG "MSG_EXCEEDS_BUFFER"
 class superLogger
 {
 public:
@@ -57,54 +65,58 @@ public:
     {
         printLocation_ = set;
     }
+    void setHighlight(bool set)
+    {
+        highlight = set;
+    }
 
     template <typename... Args>
-    void error(const char *funcName, const char *fileName, int lineNumber, const char *format, Args... args)
+    void __attribute__((noinline)) error(const char *funcName, const char *fileName, int lineNumber, const char *format, Args... args)
     {
         if (level_ >= ERROR)
         {
             String outputString = formatString(format, args...);
-            log(outputString, funcName, fileName, lineNumber, ANSI_RED, LEVEL_E);
+            log(outputString, funcName, fileName, lineNumber, ((((outputString == EXCEEDS_MSG) || highlight) ? true : false) ? ANSI_BG_RED : ANSI_RED), LEVEL_E);
         }
     }
 
     template <typename... Args>
-    void warning(const char *funcName, const char *fileName, int lineNumber, const char *format, Args... args)
+    void __attribute__((noinline)) warning(const char *funcName, const char *fileName, int lineNumber, const char *format, Args... args)
     {
         if (level_ >= WARNING)
         {
             String outputString = formatString(format, args...);
-            log(outputString, funcName, fileName, lineNumber, ANSI_YELLOW, LEVEL_W);
+            log(outputString, funcName, fileName, lineNumber, ((((outputString == EXCEEDS_MSG) || highlight) ? true : false) ? ANSI_BG_YELLOW : ANSI_YELLOW), LEVEL_W);
         }
     }
 
     template <typename... Args>
-    void info(const char *funcName, const char *fileName, int lineNumber, const char *format, Args... args)
+    void __attribute__((noinline)) info(const char *funcName, const char *fileName, int lineNumber, const char *format, Args... args)
     {
         if (level_ >= INFO)
         {
             String outputString = formatString(format, args...);
-            log(outputString, funcName, fileName, lineNumber,ANSI_GREEN, LEVEL_I);
+            log(outputString, funcName, fileName, lineNumber, ((((outputString == EXCEEDS_MSG) || highlight) ? true : false) ? ANSI_BG_GREEN : ANSI_GREEN), LEVEL_I);
         }
     }
 
     template <typename... Args>
-    void debug(const char *funcName, const char *fileName, int lineNumber, const char *format, Args... args)
+    void __attribute__((noinline)) debug(const char *funcName, const char *fileName, int lineNumber, const char *format, Args... args)
     {
         if (level_ >= DEBUG)
         {
             String outputString = formatString(format, args...);
-            log(outputString, funcName, fileName, lineNumber,ANSI_BLUE, LEVEL_D);
+            log(outputString, funcName, fileName, lineNumber, ((((outputString == EXCEEDS_MSG) || highlight) ? true : false) ? ANSI_BG_BLUE : ANSI_BLUE), LEVEL_D);
         }
     }
 
     template <typename... Args>
-    void verbose(const char *funcName, const char *fileName, int lineNumber, const char *format, Args... args)
+    void __attribute__((noinline)) verbose(const char *funcName, const char *fileName, int lineNumber, const char *format, Args... args)
     {
         if (level_ >= VERBOSE)
         {
             String outputString = formatString(format, args...);
-            log(outputString, funcName, fileName, lineNumber, ANSI_PURPLE, LEVEL_V);
+            log(outputString, funcName, fileName, lineNumber, ((((outputString == EXCEEDS_MSG) || highlight) ? true : false) ? ANSI_BG_PURPLE : ANSI_PURPLE), LEVEL_V);
         }
     }
 
@@ -114,30 +126,32 @@ public:
         return message;
     }
 
-template <typename... Args>
-String formatString(const char *format, Args... args)
-{
-    char buffer[MAX_BUFFER_SIZE];
-    int result = snprintf(buffer, sizeof(buffer), format, args...);
-    if (result < 0) {
-    }
-    int messageSize = result + 1; // add 1 to account for null terminator
-    if (messageSize > MAX_BUFFER_SIZE) {
-#if THROW_EXCEPTION_ON_OVERFLOW
-        return "ERR_EXCEEDS_BUFFER";
-#else
-        String message;
-        message.reserve(messageSize);
-        result = snprintf(&message[0], messageSize, format, args...);
-        if (result < 0) {
-            throw std::runtime_error("Error in formatString(): snprintf returned a negative value.");
+    template <typename... Args>
+    String formatString(const char *format, Args... args)
+    {
+        char buffer[MAX_BUFFER_SIZE];
+        int result = snprintf(buffer, sizeof(buffer), format, args...);
+        if (result < 0)
+        {
         }
-        return message;
+        int messageSize = result + 1; // add 1 to account for null terminator
+        if (messageSize > MAX_BUFFER_SIZE)
+        {
+#if THROW_EXCEPTION_ON_OVERFLOW
+            return EXCEEDS_MSG;
+#else
+            String message;
+            message.reserve(messageSize);
+            result = snprintf(&message[0], messageSize, format, args...);
+            if (result < 0)
+            {
+                throw std::runtime_error("Error in formatString(): snprintf returned a negative value.");
+            }
+            return message;
 #endif
+        }
+        return String(buffer);
     }
-    return String(buffer);
-}
-
 
 private:
     String name_;
@@ -147,15 +161,16 @@ private:
     bool printLevel_;
     bool printAnsi_;
     bool printLocation_;
+    bool highlight = false;
 
-    void log(const String &message, const char *funcName, const char *fileName, int lineNumber, const char *color, const char *levelLetter)
+    void __attribute__((noinline)) log(const String &message, const char *funcName, const char *fileName, int lineNumber, const char *color, char *levelLetter)
     {
         serial_.printf("%s%s%s%s%s%s%s%s%s%s%s%s%s%s\n",
                        (printAnsi_ ? color : ""),                          // ANSI color
                        (printName_ ? "[" : ""),                            // File location (if enabled)
                        (printName_ ? name_.c_str() : ""),                  // name (if enabled)
                        (printName_ ? "]" : ""),                            // File location (if enabled)
-                       (printLevel_ ? levelLetter : ""),                         // Log level (if enabled)
+                       (printLevel_ ? levelLetter : ""),                   // Log level (if enabled)
                        (printLocation_ ? "[" : ""),                        // File location (if enabled)
                        (printLocation_ ? fileName : ""),                   // File name (if enabled)
                        (printLocation_ ? ":" : ""),                        // File location (if enabled)
@@ -167,7 +182,6 @@ private:
                        (printAnsi_ ? "\033[0m" : "")                       // Reset ANSI color
         );
     }
-
 };
 
 #define log_error(debugObj, fmt, ...)                                                          \
