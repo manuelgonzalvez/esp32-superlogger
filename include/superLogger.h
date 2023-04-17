@@ -6,27 +6,30 @@
 #define MAX_BUFFER_SIZE 256
 #define THROW_EXCEPTION_ON_OVERFLOW true
 
-const char ANSI_RED[] =  "\033[91m" ;
+const char ANSI_RED[] = "\033[91m";
 const char ANSI_PURPLE[] = "\033[35m";
 const char ANSI_YELLOW[] = "\033[33m";
 const char ANSI_GREEN[] = "\033[32m";
 const char ANSI_BLUE[] = "\033[36m";
+
 const char ANSI_BG_RED[] = "\033[41;37m";
 const char ANSI_BG_PURPLE[] = "\033[45;37m";
 const char ANSI_BG_YELLOW[] = "\033[43;30m";
 const char ANSI_BG_GREEN[] = "\033[42;30m";
 const char ANSI_BG_BLUE[] = "\033[46;37m";
+
 const char LEVEL_V[] = "[V]";
 const char LEVEL_D[] = "[D]";
 const char LEVEL_I[] = "[I]";
 const char LEVEL_W[] = "[W]";
 const char LEVEL_E[] = "[E]";
+
 const char EXCEEDS_MSG[] = "MSG_EXCEEDS_BUFFER";
 
 class superLogger
 {
 public:
-    enum 
+    enum
     {
         NONE,
         ERROR,
@@ -34,7 +37,7 @@ public:
         INFO,
         DEBUG,
         VERBOSE
-    }LogLevel;
+    } LogLevel;
 
     superLogger(const String &name, uint8_t level = NONE, HardwareSerial &serial = Serial, bool pName = true, bool pLvl = true, bool pAnsi = true, bool pLoc = true) : name_(name), level_(level), serial_(serial), printName_(pName), printLevel_(pLvl), printAnsi_(pAnsi), printLocation_(pLoc) {}
 
@@ -121,7 +124,7 @@ public:
         if (level_ >= VERBOSE)
         {
             String outputString = formatString(format, args...);
-            log(outputString, funcName, fileName, lineNumber, ((((outputString == const_cast<char*>(EXCEEDS_MSG)) || highlight) ? true : false) ? const_cast<char*>(ANSI_BG_PURPLE) : ANSI_PURPLE), LEVEL_V);
+            log(outputString, funcName, fileName, lineNumber, ((((outputString == EXCEEDS_MSG) || highlight) ? true : false) ? ANSI_BG_PURPLE : ANSI_PURPLE), LEVEL_V);
         }
     }
 
@@ -168,7 +171,7 @@ private:
     bool printLocation_;
     bool highlight = false;
 
-    void __attribute__((noinline)) log(const String &message, const char *funcName, const char *fileName, int lineNumber, const char *color, char *levelLetter)
+    void log(const String &message, const char *funcName, const char *fileName, int lineNumber, const char *color, const char *levelLetter)
     {
         serial_.printf("%s%s%s%s%s%s%s%s%s%s%s%s%s%s\n",
                        (printAnsi_ ? color : ""),                          // ANSI color
@@ -224,4 +227,4 @@ private:
         debugObj.verbose(__FUNCTION__, __FILE__, __LINE__, outputString.c_str(), ##__VA_ARGS__); \
     } while (0)
 
-    #endif
+#endif

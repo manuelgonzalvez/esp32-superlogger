@@ -11,7 +11,6 @@ void setup()
 void loop()
 {
 
-
   static bool dp;
   myDebug.printName(dp);
   myDebug.printLevel(dp);
