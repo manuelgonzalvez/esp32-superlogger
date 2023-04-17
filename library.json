@@ -17,7 +17,12 @@
       }
 
     ],
-    "dependencies": {
+    "export": {
+      "exclude":
+        [
+          "test/*"
+        ]
+      
     },
     "frameworks": "arduino",
     "platforms": "espressif32"
