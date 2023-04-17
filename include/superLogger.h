@@ -1,3 +1,6 @@
+#ifndef superlogger_h
+#define superlogger_h
+
 #include "Arduino.h"
 
 #define MAX_BUFFER_SIZE 512
@@ -222,3 +225,5 @@ private:
         String outputString = debugObj.formatString(fmt, ##__VA_ARGS__);                         \
         debugObj.verbose(__FUNCTION__, __FILE__, __LINE__, outputString.c_str(), ##__VA_ARGS__); \
     } while (0)
+
+    #endif
