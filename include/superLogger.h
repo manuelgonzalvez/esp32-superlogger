@@ -3,28 +3,26 @@
 
 #include "Arduino.h"
 
-#define MAX_BUFFER_SIZE 512
+#define MAX_BUFFER_SIZE 256
 #define THROW_EXCEPTION_ON_OVERFLOW true
 
-#define ANSI_RED "\033[91m"
-#define ANSI_PURPLE "\033[35m"
-#define ANSI_YELLOW "\033[33m"
-#define ANSI_GREEN "\033[32m"
-#define ANSI_BLUE "\033[36m"
+const char ANSI_RED[] =  "\033[91m" ;
+const char ANSI_PURPLE[] = "\033[35m";
+const char ANSI_YELLOW[] = "\033[33m";
+const char ANSI_GREEN[] = "\033[32m";
+const char ANSI_BLUE[] = "\033[36m";
+const char ANSI_BG_RED[] = "\033[41;37m";
+const char ANSI_BG_PURPLE[] = "\033[45;37m";
+const char ANSI_BG_YELLOW[] = "\033[43;30m";
+const char ANSI_BG_GREEN[] = "\033[42;30m";
+const char ANSI_BG_BLUE[] = "\033[46;37m";
+const char LEVEL_V[] = "[V]";
+const char LEVEL_D[] = "[D]";
+const char LEVEL_I[] = "[I]";
+const char LEVEL_W[] = "[W]";
+const char LEVEL_E[] = "[E]";
+const char EXCEEDS_MSG[] = "MSG_EXCEEDS_BUFFER";
 
-#define ANSI_BG_RED "\033[41;37m"
-#define ANSI_BG_PURPLE "\033[45;37m"
-#define ANSI_BG_YELLOW "\033[43;30m"
-#define ANSI_BG_GREEN "\033[42;30m"
-#define ANSI_BG_BLUE "\033[46;37m"
-
-#define LEVEL_V "[V]"
-#define LEVEL_D "[D]"
-#define LEVEL_I "[I]"
-#define LEVEL_W "[W]"
-#define LEVEL_E "[E]"
-
-#define EXCEEDS_MSG "MSG_EXCEEDS_BUFFER"
 class superLogger
 {
 public:
@@ -88,7 +86,7 @@ public:
     }
 
     template <typename... Args>
-    void __attribute__((noinline)) warning(const char *funcName, const char *fileName, int lineNumber, const char *format, Args... args)
+    void warning(const char *funcName, const char *fileName, int lineNumber, const char *format, Args... args)
     {
         if (level_ >= WARNING)
         {
@@ -98,7 +96,7 @@ public:
     }
 
     template <typename... Args>
-    void __attribute__((noinline)) info(const char *funcName, const char *fileName, int lineNumber, const char *format, Args... args)
+    void info(const char *funcName, const char *fileName, int lineNumber, const char *format, Args... args)
     {
         if (level_ >= INFO)
         {
@@ -108,7 +106,7 @@ public:
     }
 
     template <typename... Args>
-    void __attribute__((noinline)) debug(const char *funcName, const char *fileName, int lineNumber, const char *format, Args... args)
+    void debug(const char *funcName, const char *fileName, int lineNumber, const char *format, Args... args)
     {
         if (level_ >= DEBUG)
         {
@@ -118,12 +116,12 @@ public:
     }
 
     template <typename... Args>
-    void __attribute__((noinline)) verbose(const char *funcName, const char *fileName, int lineNumber, const char *format, Args... args)
+    void verbose(const char *funcName, const char *fileName, int lineNumber, const char *format, Args... args)
     {
         if (level_ >= VERBOSE)
         {
             String outputString = formatString(format, args...);
-            log(outputString, funcName, fileName, lineNumber, ((((outputString == EXCEEDS_MSG) || highlight) ? true : false) ? ANSI_BG_PURPLE : ANSI_PURPLE), LEVEL_V);
+            log(outputString, funcName, fileName, lineNumber, ((((outputString == const_cast<char*>(EXCEEDS_MSG)) || highlight) ? true : false) ? const_cast<char*>(ANSI_BG_PURPLE) : ANSI_PURPLE), LEVEL_V);
         }
     }
 
