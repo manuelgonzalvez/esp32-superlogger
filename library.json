@@ -1,6 +1,6 @@
 {
     "name": "superLogger",
-    "version": "0.0.3-alpha",
+    "version": "0.0.4-alpha",
     "description": "Logging library with ANSI colours, printf-style formatting and caller code reference",
     "keywords": "logging, ANSI, Serial",
     "repository":

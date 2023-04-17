@@ -25,7 +25,7 @@
 class superLogger
 {
 public:
-    enum LogLevel
+    enum 
     {
         NONE,
         ERROR,
@@ -33,18 +33,22 @@ public:
         INFO,
         DEBUG,
         VERBOSE
-    };
+    }LogLevel;
 
-    superLogger(const String &name, LogLevel level = NONE, HardwareSerial &serial = Serial, bool pName = true, bool pLvl = true, bool pAnsi = true, bool pLoc = true) : name_(name), level_(level), serial_(serial), printName_(pName), printLevel_(pLvl), printAnsi_(pAnsi), printLocation_(pLoc) {}
+    superLogger(const String &name, uint8_t level = NONE, HardwareSerial &serial = Serial, bool pName = true, bool pLvl = true, bool pAnsi = true, bool pLoc = true) : name_(name), level_(level), serial_(serial), printName_(pName), printLevel_(pLvl), printAnsi_(pAnsi), printLocation_(pLoc) {}
 
     void setName(const String &name)
     {
         name_ = name;
     }
 
-    void setLevel(LogLevel level)
+    void setLevel(uint8_t level)
     {
         level_ = level;
+    }
+    uint8_t getLevel()
+    {
+        return level_;
     }
 
     void printName(bool set)
@@ -155,7 +159,7 @@ public:
 
 private:
     String name_;
-    LogLevel level_;
+    uint8_t level_;
     HardwareSerial &serial_;
     bool printName_;
     bool printLevel_;
